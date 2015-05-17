@@ -18,7 +18,6 @@ package com.android.server.telecom;
 
 import android.content.Context;
 import android.os.PowerManager;
-import org.cyanogenmod.hardware.TapToWake;
 
 /**
  * This class manages the proximity sensor and allows callers to turn it on and off.
@@ -65,10 +64,6 @@ public class ProximitySensorManager extends CallsManagerListenerBase {
         if (!mProximityWakeLock.isHeld()) {
             Log.i(this, "Acquiring proximity wake lock");
             mProximityWakeLock.acquire();
-            if (isTapToWakeSupported()) {
-                mWasTapToWakeEnabled = TapToWake.isEnabled();
-                TapToWake.setEnabled(false);
-            }
         } else {
             Log.i(this, "Proximity wake lock already acquired");
         }
@@ -83,24 +78,12 @@ public class ProximitySensorManager extends CallsManagerListenerBase {
             return;
         }
         if (mProximityWakeLock.isHeld()) {
-            if (isTapToWakeSupported() && mWasTapToWakeEnabled) {
-                TapToWake.setEnabled(true);
-            }
             Log.i(this, "Releasing proximity wake lock");
             int flags =
                 (screenOnImmediately ? 0 : PowerManager.RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY);
             mProximityWakeLock.release(flags);
         } else {
             Log.i(this, "Proximity wake lock already released");
-        }
-    }
-
-    private static boolean isTapToWakeSupported() {
-        try {
-            return TapToWake.isSupported();
-        } catch (NoClassDefFoundError e) {
-            // Hardware abstraction framework not installed
-            return false;
         }
     }
 }
